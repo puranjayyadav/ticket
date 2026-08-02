@@ -1,8 +1,9 @@
-const CACHE_NAME = 'ticket-pwa-v6';
+const CACHE_NAME = 'ticket-pwa-v7';
 const APP_SHELL = [
   './',
   './index.html',
   './styles.css',
+  './base-styles.css',
   './script.js',
   './manifest.webmanifest',
   './icons/icon-192.png',

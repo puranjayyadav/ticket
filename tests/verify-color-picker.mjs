@@ -4,7 +4,8 @@ import { readFileSync } from 'node:fs';
 
 const require = createRequire(import.meta.url);
 const scriptText = readFileSync(new URL('../script.js', import.meta.url), 'utf8');
-const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+const css = `${readFileSync(new URL('../base-styles.css', import.meta.url), 'utf8')}
+${readFileSync(new URL('../styles.css', import.meta.url), 'utf8')}`;
 const {
   COLOR_TARGETS,
   QUICK_COLORS,
