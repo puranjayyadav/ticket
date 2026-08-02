@@ -2,41 +2,39 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Replace the hue-only controls with a full solid-color picker that supports native visual selection, exact HEX entry, quick swatches, and a reusable saved-color palette for the QR frame and all three fare-strip segments.
+**Goal:** Replace the hue-only controls with a full solid-color picker that supports Android’s native picker, exact HEX entry, quick swatches, and a reusable saved-color palette for the QR frame and all three fare-strip segments.
 
-**Architecture:** Keep the application dependency-free and move all color state to normalized uppercase `#RRGGBB` strings. Put conversion, validation, migration, and palette-ordering logic in pure exported helpers in `script.js`, then let the existing `initializeTicket()` function wire those helpers to the bottom-sheet controls and `localStorage`. Preserve the current ticket interactions and deploy through the existing GitHub Pages workflow after a service-worker cache bump.
+**Architecture:** Store all active and saved colors as normalized uppercase `#RRGGBB` strings. Export pure validation, conversion, migration, and palette helpers from `script.js` for Node tests; keep browser DOM wiring inside `initializeTicket()`. Continue using the existing bottom sheet, `localStorage`, service worker, and GitHub Pages workflow.
 
-**Tech Stack:** Static HTML, CSS, vanilla JavaScript, browser `localStorage`, Node.js `node:assert/strict` source/behavior tests, service worker, GitHub Pages Actions.
+**Tech Stack:** HTML, CSS, vanilla JavaScript, browser `localStorage`, Node.js `node:assert/strict`, service worker, GitHub Pages Actions.
 
 ## Global Constraints
 
-- Support fully opaque solid colors only; opacity is out of scope.
-- Normalize every accepted color to uppercase six-digit HEX in the form `#RRGGBB`.
-- Accept `#RRGGBB`, `RRGGBB`, `#RGB`, and `RGB`; reject all other text without changing the active target.
-- Keep four independently persisted targets: QR frame, left strip, middle strip, and right strip.
-- Keep the shared saved-color palette newest-first, deduplicated, and limited to 20 entries.
-- Preserve current defaults exactly: QR `#FFD400`, left `#C96BE8`, middle `#D081EE`, right `#956F62`.
-- Include quick swatches for black, white, light grey, dark grey, red, orange, yellow, green, blue, and purple.
-- Reset only the active target; never clear the saved-color palette from Reset.
-- Migrate existing hue values where possible and fall back to the target default when legacy data is invalid.
-- Keep all controls keyboard accessible and comfortable on Android phone screens.
-- Add no runtime dependencies and do not introduce real QR-code generation.
-
----
+- Fully opaque solid colors only; no alpha channel.
+- Accept `#RRGGBB`, `RRGGBB`, `#RGB`, and `RGB`; normalize to uppercase `#RRGGBB`.
+- Invalid HEX text must leave the last valid color applied.
+- Persist four independent targets: QR, left strip, middle strip, right strip.
+- Preserve defaults: `#FFD400`, `#C96BE8`, `#D081EE`, `#956F62`.
+- Share saved colors across all targets, newest-first, deduplicated, maximum 20.
+- Include black, white, light grey, dark grey, red, orange, yellow, green, blue, and purple quick swatches.
+- Reset only the active target and never remove saved colors.
+- Migrate legacy hue values where possible.
+- Keep the UI accessible and usable on Android phone widths.
+- Add no runtime dependencies and do not create a real scannable QR code.
 
 ## File Map
 
-- Modify `script.js`: replace hue state with HEX state; add pure color helpers, legacy migration, per-target persistence, swatch rendering, and picker synchronization.
-- Modify `index.html:78-103`: replace the hue slider with native color input, HEX field, quick/saved swatch containers, validation text, Save color, Reset, and preview controls.
-- Modify `styles.css:286-445`: replace hue-slider styling with responsive picker, swatch, error, and action styling while preserving the bottom-sheet shell.
-- Create `tests/verify-color-picker.mjs`: behavior tests for normalization, conversion, migration inputs, palette ordering, deduplication, limits, defaults, and required UI wiring.
-- Modify `tests/verify-ticket.mjs:61-104`: replace hue-specific assertions with full-picker, persistence, accessibility, and cache-version assertions.
-- Modify `tests/verify-interactions.mjs:9-60`: keep interaction regressions but update target metadata and cache-version expectations.
-- Modify `service-worker.js:1`: bump the cache from `ticket-pwa-v4` to `ticket-pwa-v5`.
+- Modify `script.js`: HEX model, conversion, migration, persistence, swatches, picker synchronization.
+- Modify `index.html:78-103`: full picker controls and saved-color container.
+- Modify `styles.css:286-445`: responsive picker and swatch styling.
+- Create `tests/verify-color-picker.mjs`: helper and source-level picker tests.
+- Modify `tests/verify-ticket.mjs:61-104`: replace hue assertions and expect cache v5.
+- Modify `tests/verify-interactions.mjs:9-60`: expect HEX metadata and cache v5.
+- Modify `service-worker.js:1`: `ticket-pwa-v5`.
 
 ---
 
-### Task 1: Pure HEX Color Model, Legacy Conversion, and Palette Helpers
+### Task 1: HEX Helpers, Defaults, Migration, and Saved-Palette Rules
 
 **Files:**
 - Create: `tests/verify-color-picker.mjs`
@@ -44,12 +42,11 @@
 - Test: `tests/verify-color-picker.mjs`
 
 **Interfaces:**
-- Consumes: Existing target keys `qr`, `fareLeft`, `fareMiddle`, and `fareRight`.
-- Produces: `COLOR_TARGETS`, `QUICK_COLORS`, `normalizeHexColor(value)`, `hslToHex(hue, saturation, lightness)`, `legacyHueToHex(targetKey, value)`, `normalizeSavedColors(values)`, and `addSavedColor(savedColors, color, limit)` exported through `module.exports`.
+- Produces: `COLOR_TARGETS`, `QUICK_COLORS`, `normalizeHexColor`, `hslToHex`, `legacyHueToHex`, `normalizeSavedColors`, and `addSavedColor`.
 
-- [ ] **Step 1: Write the failing helper tests**
+- [ ] **Step 1: Write the failing tests**
 
-Create `tests/verify-color-picker.mjs` with:
+Create `tests/verify-color-picker.mjs`:
 
 ```js
 import assert from 'node:assert/strict';
@@ -82,10 +79,8 @@ assert.equal(hslToHex(0, 0, 50), '#808080');
 assert.equal(hslToHex(0, 100, 50), '#FF0000');
 assert.equal(hslToHex(120, 100, 50), '#00FF00');
 assert.equal(hslToHex(240, 100, 50), '#0000FF');
-
 assert.equal(legacyHueToHex('qr', 'invalid'), '#FFD400');
 assert.match(legacyHueToHex('qr', '48'), /^#[0-9A-F]{6}$/);
-assert.match(legacyHueToHex('fareLeft', '285'), /^#[0-9A-F]{6}$/);
 
 assert.deepEqual(
   normalizeSavedColors(['#fff', '#808080', '#FFFFFF', 'bad', '#000']),
@@ -95,11 +90,14 @@ assert.deepEqual(
   addSavedColor(['#FFFFFF', '#808080'], '#808080'),
   ['#808080', '#FFFFFF'],
 );
+assert.deepEqual(addSavedColor(['#FFFFFF'], 'bad'), ['#FFFFFF']);
 assert.equal(
-  addSavedColor(Array.from({ length: 20 }, (_, index) => `#${index.toString(16).padStart(6, '0')}`), '#ABCDEF').length,
+  addSavedColor(
+    Array.from({ length: 20 }, (_, index) => `#${index.toString(16).padStart(6, '0')}`),
+    '#ABCDEF',
+  ).length,
   20,
 );
-assert.equal(addSavedColor(['#FFFFFF'], 'bad'), ['#FFFFFF'].length);
 
 assert.deepEqual(
   Object.fromEntries(Object.entries(COLOR_TARGETS).map(([key, target]) => [key, target.defaultColor])),
@@ -116,118 +114,65 @@ assert.deepEqual(
 );
 assert.match(scriptText, /module\.exports\s*=\s*\{[^}]*normalizeHexColor[^}]*addSavedColor/s);
 
-console.log('Full color normalization, migration, and saved-palette helper checks passed.');
+console.log('Full color helper checks passed.');
 ```
 
-- [ ] **Step 2: Run the helper tests and verify RED**
-
-Run:
+- [ ] **Step 2: Verify RED**
 
 ```bash
 node tests/verify-color-picker.mjs
 ```
 
-Expected: FAIL because the new exports and HEX helpers do not exist yet.
+Expected: FAIL because the HEX helpers do not exist.
 
-- [ ] **Step 3: Replace hue target metadata and add pure helper implementations**
+- [ ] **Step 3: Implement the pure model in `script.js`**
 
-At the top of `script.js`, replace `DEFAULT_HUE`, `HUE_STORAGE_KEY`, hue metadata, `normalizeHue()`, and `colorForTarget()` with:
+Replace hue constants/metadata with:
 
 ```js
 const STARTING_SECONDS = 59 * 60 + 58;
 const SAVED_COLORS_STORAGE_KEY = 'ticketSavedColors';
 const MAX_SAVED_COLORS = 20;
-
 const QUICK_COLORS = Object.freeze([
-  '#000000',
-  '#FFFFFF',
-  '#D3D3D3',
-  '#555555',
-  '#FF3B30',
-  '#FF9500',
-  '#FFD60A',
-  '#34C759',
-  '#007AFF',
-  '#AF52DE',
+  '#000000', '#FFFFFF', '#D3D3D3', '#555555', '#FF3B30',
+  '#FF9500', '#FFD60A', '#34C759', '#007AFF', '#AF52DE',
 ]);
 
 const COLOR_TARGETS = Object.freeze({
-  qr: Object.freeze({
-    cssVariable: '--qr-color',
-    storageKey: 'ticketQrColor',
-    legacyStorageKey: 'ticketQrHue',
-    legacySaturation: 100,
-    legacyLightness: 50,
-    defaultColor: '#FFD400',
-    title: 'QR frame color',
-  }),
-  fareLeft: Object.freeze({
-    cssVariable: '--fare-strip-purple',
-    storageKey: 'ticketFareLeftColor',
-    legacyStorageKey: 'ticketFareLeftHue',
-    legacySaturation: 73,
-    legacyLightness: 66,
-    defaultColor: '#C96BE8',
-    title: 'Left bar color',
-  }),
-  fareMiddle: Object.freeze({
-    cssVariable: '--fare-strip-lilac',
-    storageKey: 'ticketFareMiddleColor',
-    legacyStorageKey: 'ticketFareMiddleHue',
-    legacySaturation: 76,
-    legacyLightness: 72,
-    defaultColor: '#D081EE',
-    title: 'Middle bar color',
-  }),
-  fareRight: Object.freeze({
-    cssVariable: '--fare-strip-brown',
-    storageKey: 'ticketFareRightColor',
-    legacyStorageKey: 'ticketFareRightHue',
-    legacySaturation: 21,
-    legacyLightness: 48,
-    defaultColor: '#956F62',
-    title: 'Right bar color',
-  }),
+  qr: Object.freeze({ cssVariable: '--qr-color', storageKey: 'ticketQrColor', legacyStorageKey: 'ticketQrHue', legacySaturation: 100, legacyLightness: 50, defaultColor: '#FFD400', title: 'QR frame color' }),
+  fareLeft: Object.freeze({ cssVariable: '--fare-strip-purple', storageKey: 'ticketFareLeftColor', legacyStorageKey: 'ticketFareLeftHue', legacySaturation: 73, legacyLightness: 66, defaultColor: '#C96BE8', title: 'Left bar color' }),
+  fareMiddle: Object.freeze({ cssVariable: '--fare-strip-lilac', storageKey: 'ticketFareMiddleColor', legacyStorageKey: 'ticketFareMiddleHue', legacySaturation: 76, legacyLightness: 72, defaultColor: '#D081EE', title: 'Middle bar color' }),
+  fareRight: Object.freeze({ cssVariable: '--fare-strip-brown', storageKey: 'ticketFareRightColor', legacyStorageKey: 'ticketFareRightHue', legacySaturation: 21, legacyLightness: 48, defaultColor: '#956F62', title: 'Right bar color' }),
 });
+```
 
+Add:
+
+```js
 function normalizeHexColor(value) {
-  if (typeof value !== 'string') {
-    return null;
+  if (typeof value !== 'string') return null;
+  const raw = value.trim().replace(/^#/, '');
+  if (/^[0-9a-fA-F]{3}$/.test(raw)) {
+    return `#${raw.split('').map((character) => character.repeat(2)).join('').toUpperCase()}`;
   }
-
-  const trimmed = value.trim().replace(/^#/, '');
-  if (/^[0-9a-fA-F]{3}$/.test(trimmed)) {
-    return `#${trimmed.split('').map((character) => character.repeat(2)).join('').toUpperCase()}`;
-  }
-  if (/^[0-9a-fA-F]{6}$/.test(trimmed)) {
-    return `#${trimmed.toUpperCase()}`;
-  }
-  return null;
+  return /^[0-9a-fA-F]{6}$/.test(raw) ? `#${raw.toUpperCase()}` : null;
 }
 
 function hslToHex(hue, saturation, lightness) {
-  const normalizedHue = ((Number(hue) % 360) + 360) % 360;
-  const normalizedSaturation = Math.min(100, Math.max(0, Number(saturation))) / 100;
-  const normalizedLightness = Math.min(100, Math.max(0, Number(lightness))) / 100;
-  const chroma = (1 - Math.abs((2 * normalizedLightness) - 1)) * normalizedSaturation;
-  const segment = normalizedHue / 60;
-  const secondary = chroma * (1 - Math.abs((segment % 2) - 1));
-  const match = normalizedLightness - (chroma / 2);
-  let red = 0;
-  let green = 0;
-  let blue = 0;
-
-  if (segment < 1) [red, green, blue] = [chroma, secondary, 0];
-  else if (segment < 2) [red, green, blue] = [secondary, chroma, 0];
-  else if (segment < 3) [red, green, blue] = [0, chroma, secondary];
-  else if (segment < 4) [red, green, blue] = [0, secondary, chroma];
-  else if (segment < 5) [red, green, blue] = [secondary, 0, chroma];
-  else [red, green, blue] = [chroma, 0, secondary];
-
-  return `#${[red, green, blue]
-    .map((channel) => Math.round((channel + match) * 255).toString(16).padStart(2, '0'))
-    .join('')
-    .toUpperCase()}`;
+  const h = ((Number(hue) % 360) + 360) % 360;
+  const s = Math.min(100, Math.max(0, Number(saturation))) / 100;
+  const l = Math.min(100, Math.max(0, Number(lightness))) / 100;
+  const c = (1 - Math.abs((2 * l) - 1)) * s;
+  const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
+  const m = l - (c / 2);
+  let rgb;
+  if (h < 60) rgb = [c, x, 0];
+  else if (h < 120) rgb = [x, c, 0];
+  else if (h < 180) rgb = [0, c, x];
+  else if (h < 240) rgb = [0, x, c];
+  else if (h < 300) rgb = [x, 0, c];
+  else rgb = [c, 0, x];
+  return `#${rgb.map((channel) => Math.round((channel + m) * 255).toString(16).padStart(2, '0')).join('').toUpperCase()}`;
 }
 
 function legacyHueToHex(targetKey, value) {
@@ -240,689 +185,222 @@ function legacyHueToHex(targetKey, value) {
 }
 
 function normalizeSavedColors(values) {
-  if (!Array.isArray(values)) {
-    return [];
-  }
-
-  const normalized = [];
+  if (!Array.isArray(values)) return [];
+  const result = [];
   values.forEach((value) => {
     const color = normalizeHexColor(value);
-    if (color && !normalized.includes(color)) {
-      normalized.push(color);
-    }
+    if (color && !result.includes(color)) result.push(color);
   });
-  return normalized.slice(0, MAX_SAVED_COLORS);
+  return result.slice(0, MAX_SAVED_COLORS);
 }
 
-function addSavedColor(savedColors, color, limit = MAX_SAVED_COLORS) {
-  const normalizedColor = normalizeHexColor(color);
-  if (!normalizedColor) {
-    return normalizeSavedColors(savedColors).slice(0, limit);
-  }
-  return [
-    normalizedColor,
-    ...normalizeSavedColors(savedColors).filter((savedColor) => savedColor !== normalizedColor),
-  ].slice(0, limit);
+function addSavedColor(savedColors, value, limit = MAX_SAVED_COLORS) {
+  const color = normalizeHexColor(value);
+  const normalized = normalizeSavedColors(savedColors);
+  if (!color) return normalized.slice(0, limit);
+  return [color, ...normalized.filter((saved) => saved !== color)].slice(0, limit);
 }
 ```
 
-Update the CommonJS export block to:
+Export these helpers with the existing zone/timer helpers.
 
-```js
-if (typeof module !== 'undefined' && module.exports) {
-  module.exports = {
-    COLOR_TARGETS,
-    QUICK_COLORS,
-    addSavedColor,
-    calculateElapsedPercent,
-    hslToHex,
-    legacyHueToHex,
-    nextZoneNumber,
-    normalizeHexColor,
-    normalizeSavedColors,
-  };
-}
-```
-
-- [ ] **Step 4: Run the helper tests and verify GREEN**
-
-Run:
+- [ ] **Step 4: Verify GREEN and commit**
 
 ```bash
 node tests/verify-color-picker.mjs
 node tests/verify-interactions.mjs
-```
-
-Expected: `verify-color-picker.mjs` passes; `verify-interactions.mjs` may still fail only on old metadata/cache assertions that Task 4 will update, while zone and progress helper assertions remain valid.
-
-- [ ] **Step 5: Commit Task 1**
-
-```bash
 git add script.js tests/verify-color-picker.mjs
 git commit -m "feat: add full color model helpers"
 ```
 
 ---
 
-### Task 2: Full Picker Markup and Android-First Styling
+### Task 2: Picker Markup and Android-First Styling
 
 **Files:**
 - Modify: `index.html:78-103`
 - Modify: `styles.css:286-445`
 - Modify: `tests/verify-color-picker.mjs`
-- Test: `tests/verify-color-picker.mjs`
 
 **Interfaces:**
-- Consumes: IDs read later by `initializeTicket()`.
-- Produces: `colorPicker`, `hexColorInput`, `colorValidation`, `quickColors`, `savedColors`, `savedColorsEmpty`, `saveColor`, `colorPreview`, `colorValue`, `resetColor`, and `closeColorSheet` DOM elements.
+- Produces DOM IDs: `colorPicker`, `hexColorInput`, `colorValidation`, `quickColors`, `savedColors`, `savedColorsEmpty`, `saveColor`, `colorPreview`, `colorValue`, `resetColor`.
 
-- [ ] **Step 1: Add failing markup and CSS assertions**
+- [ ] **Step 1: Add failing source assertions**
 
-Append to `tests/verify-color-picker.mjs` before the final `console.log`:
+Append assertions for all IDs above, `type="color"`, `maxlength="7"`, `aria-live="polite"`, `.color-swatches`, `.color-swatch[aria-pressed="true"]`, and the absence of `hueSlider`/`hueValue`.
 
-```js
-const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
-const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
-
-assert.match(html, /id="colorPicker"[^>]+type="color"/);
-assert.match(html, /id="hexColorInput"[^>]+maxlength="7"/);
-assert.match(html, /id="colorValidation"[^>]+aria-live="polite"/);
-assert.match(html, /id="quickColors"/);
-assert.match(html, /id="savedColors"/);
-assert.match(html, /id="savedColorsEmpty"/);
-assert.match(html, /id="saveColor"/);
-assert.match(html, /id="colorPreview"/);
-assert.match(html, /id="colorValue"[^>]+aria-live="polite"/);
-assert.match(html, /id="resetColor"/);
-assert.doesNotMatch(html, /id="hueSlider"/);
-assert.doesNotMatch(html, /id="hueValue"/);
-
-assert.match(css, /\.picker-fields\s*\{/);
-assert.match(css, /\.color-swatches\s*\{[^}]*display:\s*grid/s);
-assert.match(css, /\.color-swatch\[aria-pressed="true"\]/);
-assert.match(css, /\.picker-validation\s*\{/);
-assert.match(css, /\.picker-actions\s*\{/);
-assert.match(css, /\.color-sheet\s*\{[^}]*max-height:\s*min\(88dvh,/s);
-```
-
-- [ ] **Step 2: Run tests and verify RED**
+- [ ] **Step 2: Verify RED**
 
 ```bash
 node tests/verify-color-picker.mjs
 ```
 
-Expected: FAIL on the missing full-picker markup.
+- [ ] **Step 3: Replace hue markup**
 
-- [ ] **Step 3: Replace the hue controls in `index.html`**
-
-Replace the content between `.sheet-header` and the closing `</section>` of `#colorSheet` with:
+Use this body beneath the existing sheet header:
 
 ```html
-    <div class="picker-fields">
-      <label class="picker-field picker-field--native" for="colorPicker">
-        <span>Pick any color</span>
-        <input id="colorPicker" type="color" value="#FFD400" />
-      </label>
-
-      <label class="picker-field" for="hexColorInput">
-        <span>HEX color</span>
-        <input
-          id="hexColorInput"
-          type="text"
-          value="#FFD400"
-          maxlength="7"
-          inputmode="text"
-          autocomplete="off"
-          autocapitalize="characters"
-          spellcheck="false"
-          aria-describedby="colorValidation"
-        />
-      </label>
-    </div>
-
-    <p class="picker-validation" id="colorValidation" aria-live="polite" hidden>
-      Enter a 3- or 6-digit HEX color.
-    </p>
-
-    <section class="picker-section" aria-labelledby="quickColorsTitle">
-      <h3 id="quickColorsTitle">Quick colors</h3>
-      <div class="color-swatches" id="quickColors"></div>
-    </section>
-
-    <section class="picker-section" aria-labelledby="savedColorsTitle">
-      <div class="picker-section__heading">
-        <h3 id="savedColorsTitle">Saved colors</h3>
-        <button class="save-color" id="saveColor" type="button">Save color</button>
-      </div>
-      <p class="saved-colors-empty" id="savedColorsEmpty">No saved colors yet.</p>
-      <div class="color-swatches" id="savedColors"></div>
-    </section>
-
-    <div class="picker-actions">
-      <span class="color-preview" id="colorPreview" aria-hidden="true"></span>
-      <output id="colorValue" for="colorPicker hexColorInput" aria-live="polite">#FFD400</output>
-      <button class="reset-color" id="resetColor" type="button">Reset</button>
-    </div>
+<div class="picker-fields">
+  <label class="picker-field picker-field--native" for="colorPicker">
+    <span>Pick any color</span>
+    <input id="colorPicker" type="color" value="#FFD400" />
+  </label>
+  <label class="picker-field" for="hexColorInput">
+    <span>HEX color</span>
+    <input id="hexColorInput" type="text" value="#FFD400" maxlength="7" inputmode="text" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-describedby="colorValidation" />
+  </label>
+</div>
+<p class="picker-validation" id="colorValidation" aria-live="polite" hidden>Enter a 3- or 6-digit HEX color.</p>
+<section class="picker-section" aria-labelledby="quickColorsTitle">
+  <h3 id="quickColorsTitle">Quick colors</h3>
+  <div class="color-swatches" id="quickColors"></div>
+</section>
+<section class="picker-section" aria-labelledby="savedColorsTitle">
+  <div class="picker-section__heading">
+    <h3 id="savedColorsTitle">Saved colors</h3>
+    <button class="save-color" id="saveColor" type="button">Save color</button>
+  </div>
+  <p class="saved-colors-empty" id="savedColorsEmpty">No saved colors yet.</p>
+  <div class="color-swatches" id="savedColors"></div>
+</section>
+<div class="picker-actions">
+  <span class="color-preview" id="colorPreview" aria-hidden="true"></span>
+  <output id="colorValue" for="colorPicker hexColorInput" aria-live="polite">#FFD400</output>
+  <button class="reset-color" id="resetColor" type="button">Reset</button>
+</div>
 ```
 
-Keep the existing sheet header and close button unchanged.
+- [ ] **Step 4: Replace hue CSS**
 
-- [ ] **Step 4: Replace hue-slider CSS with full-picker CSS**
+Keep the sheet shell, then add responsive grid fields, a 48px native color input and HEX input, a five-column swatch grid, 44px swatches, visible light-color borders, selected `aria-pressed` ring, validation text, Save/Reset buttons, and `max-height: min(88dvh, 720px); overflow-y: auto;`. At `max-width: 390px`, stack the picker fields into one column.
 
-Delete `.hue-label`, all `#hueSlider` rules, `.sheet-footer`, and `#hueValue`. Add:
-
-```css
-.color-sheet {
-  max-height: min(88dvh, 720px);
-  overflow-y: auto;
-  overscroll-behavior: contain;
-}
-
-.picker-fields {
-  display: grid;
-  grid-template-columns: minmax(0, 0.7fr) minmax(0, 1.3fr);
-  gap: 12px;
-  margin-top: 18px;
-}
-
-.picker-field {
-  display: grid;
-  gap: 7px;
-  min-width: 0;
-  font-size: 14px;
-  font-weight: 700;
-}
-
-.picker-field input[type="text"] {
-  width: 100%;
-  min-width: 0;
-  height: 48px;
-  padding: 0 12px;
-  border: 1px solid #c9c9cf;
-  border-radius: 12px;
-  background: #fff;
-  color: #111;
-  font: 700 17px/1 Arial, Helvetica, sans-serif;
-  text-transform: uppercase;
-}
-
-.picker-field input[type="text"][aria-invalid="true"] {
-  border-color: #d70015;
-}
-
-.picker-field--native input[type="color"] {
-  width: 100%;
-  height: 48px;
-  padding: 4px;
-  border: 1px solid #c9c9cf;
-  border-radius: 12px;
-  background: #fff;
-  cursor: pointer;
-}
-
-.picker-validation {
-  margin: 8px 0 0;
-  color: #b00020;
-  font-size: 13px;
-}
-
-.picker-section {
-  margin-top: 18px;
-}
-
-.picker-section h3 {
-  margin: 0;
-  font-size: 15px;
-  line-height: 1.2;
-}
-
-.picker-section__heading {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.color-swatches {
-  display: grid;
-  grid-template-columns: repeat(5, minmax(42px, 1fr));
-  gap: 10px;
-  margin-top: 10px;
-}
-
-.color-swatch {
-  min-width: 0;
-  height: 44px;
-  padding: 0;
-  border: 2px solid rgba(0, 0, 0, 0.2);
-  border-radius: 12px;
-  background: var(--swatch-color);
-  cursor: pointer;
-  touch-action: manipulation;
-}
-
-.color-swatch[aria-pressed="true"] {
-  border-color: #111;
-  box-shadow: 0 0 0 3px #fff, 0 0 0 5px #1594eb;
-}
-
-.color-swatch:focus-visible,
-.save-color:focus-visible,
-.reset-color:focus-visible {
-  outline: 3px solid #1594eb;
-  outline-offset: 2px;
-}
-
-.saved-colors-empty {
-  margin: 9px 0 0;
-  color: #666;
-  font-size: 14px;
-}
-
-.save-color,
-.reset-color {
-  min-height: 42px;
-  border: 1px solid #d2d2d7;
-  border-radius: 10px;
-  background: #fff;
-  color: #111;
-  font-weight: 700;
-}
-
-.save-color {
-  padding: 8px 12px;
-}
-
-.picker-actions {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-top: 20px;
-}
-
-.color-preview {
-  width: 34px;
-  height: 34px;
-  flex: 0 0 auto;
-  border: 1px solid rgba(0, 0, 0, 0.22);
-  border-radius: 50%;
-  background: var(--active-picker-color);
-}
-
-#colorValue {
-  flex: 1;
-  min-width: 0;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-}
-
-.reset-color {
-  padding: 9px 14px;
-}
-
-@media (max-width: 390px) {
-  .picker-fields {
-    grid-template-columns: 1fr;
-  }
-
-  .color-swatches {
-    grid-template-columns: repeat(5, minmax(38px, 1fr));
-    gap: 8px;
-  }
-}
-```
-
-Keep the existing fixed sheet positioning, safe-area padding, handle, header, backdrop, and `[hidden]` rule.
-
-- [ ] **Step 5: Run tests and verify GREEN**
+- [ ] **Step 5: Verify and commit**
 
 ```bash
 node tests/verify-color-picker.mjs
-```
-
-Expected: PASS for helper, markup, and CSS assertions.
-
-- [ ] **Step 6: Commit Task 2**
-
-```bash
 git add index.html styles.css tests/verify-color-picker.mjs
 git commit -m "feat: add full color picker interface"
 ```
 
 ---
 
-### Task 3: Per-Target Color Persistence, Saved Colors, and Picker Synchronization
+### Task 3: Browser State, Persistence, Swatches, and Validation
 
 **Files:**
 - Modify: `script.js:110-335`
 - Modify: `tests/verify-color-picker.mjs`
-- Test: `tests/verify-color-picker.mjs`
 
 **Interfaces:**
-- Consumes: Pure helpers and DOM IDs from Tasks 1-2.
-- Produces: Immediate color application, valid HEX synchronization, localStorage migration, quick swatches, saved swatches, Save color behavior, active-target Reset, and focus restoration.
+- Consumes helpers and Task 2 DOM IDs.
+- Produces immediate application, legacy migration, saved palette, active-target Reset, and focus restoration.
 
-- [ ] **Step 1: Add failing integration/source assertions**
+- [ ] **Step 1: Add failing source assertions**
 
-Append before the test file's final `console.log`:
+Assert that `script.js` reads/writes each target’s new storage key, reads legacy keys, parses/stringifies `ticketSavedColors`, listens to `colorPicker`, `hexColorInput`, and `saveColor`, renders both swatch containers, uses `aria-pressed`, and resets with `defaultColor`.
 
-```js
-assert.match(scriptText, /const\s+SAVED_COLORS_STORAGE_KEY\s*=\s*'ticketSavedColors'/);
-assert.match(scriptText, /localStorage\.getItem\(target\.storageKey\)/);
-assert.match(scriptText, /localStorage\.getItem\(target\.legacyStorageKey\)/);
-assert.match(scriptText, /localStorage\.setItem\(target\.storageKey,\s*color\)/);
-assert.match(scriptText, /JSON\.parse\(localStorage\.getItem\(SAVED_COLORS_STORAGE_KEY\)/);
-assert.match(scriptText, /localStorage\.setItem\(SAVED_COLORS_STORAGE_KEY,\s*JSON\.stringify\(savedColors\)\)/);
-assert.match(scriptText, /colorPicker\.addEventListener\('input'/);
-assert.match(scriptText, /hexColorInput\.addEventListener\('input'/);
-assert.match(scriptText, /saveColorButton\.addEventListener\('click'/);
-assert.match(scriptText, /renderSwatches\(quickColorsContainer,\s*QUICK_COLORS/);
-assert.match(scriptText, /renderSwatches\(savedColorsContainer,\s*savedColors/);
-assert.match(scriptText, /applyColor\(activeColorTarget,\s*COLOR_TARGETS\[activeColorTarget\]\.defaultColor\)/);
-assert.match(scriptText, /aria-pressed/);
-assert.match(scriptText, /Enter a 3- or 6-digit HEX color\./);
-```
-
-- [ ] **Step 2: Run tests and verify RED**
+- [ ] **Step 2: Verify RED**
 
 ```bash
 node tests/verify-color-picker.mjs
 ```
 
-Expected: FAIL because browser integration still references hue controls and hue persistence.
+- [ ] **Step 3: Replace hue DOM/state with color DOM/state**
 
-- [ ] **Step 3: Replace hue DOM references and required-element guard**
-
-Inside `initializeTicket()`, replace the hue references with:
+Inside `initializeTicket()`, query the Task 2 IDs, require them in the missing-element guard, and use:
 
 ```js
-  const colorPicker = document.getElementById('colorPicker');
-  const hexColorInput = document.getElementById('hexColorInput');
-  const colorValidation = document.getElementById('colorValidation');
-  const quickColorsContainer = document.getElementById('quickColors');
-  const savedColorsContainer = document.getElementById('savedColors');
-  const savedColorsEmpty = document.getElementById('savedColorsEmpty');
-  const saveColorButton = document.getElementById('saveColor');
-  const colorPreview = document.getElementById('colorPreview');
-  const colorValue = document.getElementById('colorValue');
-  const resetColor = document.getElementById('resetColor');
+const currentColors = {};
+let savedColors = [];
 ```
 
-Require all of those elements in the existing missing-elements guard and remove `hueSlider` and `hueValue` from that guard.
+Implement `readStoredColor(targetKey)` to prefer a normalized new HEX value, otherwise convert `legacyStorageKey` with `legacyHueToHex`, persist the migrated HEX value, and otherwise return `defaultColor`.
 
-- [ ] **Step 4: Replace hue state and persistence with HEX state and migration**
-
-Use this state and storage logic inside `initializeTicket()`:
+Implement `readSavedColors()` with:
 
 ```js
-  const currentColors = {};
-  let savedColors = [];
-
-  function readStoredColor(targetKey) {
-    const target = COLOR_TARGETS[targetKey];
-    try {
-      const storedColor = normalizeHexColor(localStorage.getItem(target.storageKey));
-      if (storedColor) {
-        return storedColor;
-      }
-
-      const legacyHue = localStorage.getItem(target.legacyStorageKey);
-      if (legacyHue !== null) {
-        const migratedColor = legacyHueToHex(targetKey, legacyHue);
-        localStorage.setItem(target.storageKey, migratedColor);
-        return migratedColor;
-      }
-    } catch (error) {
-      console.warn(`Unable to read the saved ${target.title.toLowerCase()}.`, error);
-    }
-    return target.defaultColor;
-  }
-
-  function saveTargetColor(targetKey, color) {
-    try {
-      localStorage.setItem(COLOR_TARGETS[targetKey].storageKey, color);
-    } catch (error) {
-      console.warn(`Unable to save the ${COLOR_TARGETS[targetKey].title.toLowerCase()}.`, error);
-    }
-  }
-
-  function readSavedColors() {
-    try {
-      const stored = JSON.parse(localStorage.getItem(SAVED_COLORS_STORAGE_KEY) || '[]');
-      return normalizeSavedColors(stored);
-    } catch (error) {
-      console.warn('Unable to read saved colors.', error);
-      return [];
-    }
-  }
-
-  function persistSavedColors() {
-    try {
-      localStorage.setItem(SAVED_COLORS_STORAGE_KEY, JSON.stringify(savedColors));
-    } catch (error) {
-      console.warn('Unable to save the color palette.', error);
-    }
-  }
+const stored = JSON.parse(localStorage.getItem(SAVED_COLORS_STORAGE_KEY) || '[]');
+return normalizeSavedColors(stored);
 ```
 
-- [ ] **Step 5: Add picker synchronization, application, validation, and swatch rendering**
+Storage exceptions must log warnings and return safe defaults.
 
-Replace `updateColorControls()` and `applyHue()` with:
+- [ ] **Step 4: Implement UI synchronization and application**
+
+Add:
 
 ```js
-  function setValidationMessage(message = '') {
-    const hasError = Boolean(message);
-    colorValidation.textContent = message || 'Enter a 3- or 6-digit HEX color.';
-    colorValidation.hidden = !hasError;
-    hexColorInput.setAttribute('aria-invalid', String(hasError));
-  }
-
-  function updateSelectedSwatches() {
-    document.querySelectorAll('.color-swatch').forEach((button) => {
-      button.setAttribute('aria-pressed', String(button.dataset.color === currentColors[activeColorTarget]));
-    });
-  }
-
-  function updateColorControls(targetKey) {
-    const color = currentColors[targetKey];
-    colorPicker.value = color;
-    hexColorInput.value = color;
-    colorPreview.style.background = color;
-    colorValue.textContent = color;
-    colorSheetTitle.textContent = COLOR_TARGETS[targetKey].title;
-    document.documentElement.style.setProperty('--active-picker-color', color);
-    setValidationMessage();
-    updateSelectedSwatches();
-  }
-
-  function applyColor(targetKey, value, { persist = true } = {}) {
-    const color = normalizeHexColor(value);
-    if (!COLOR_TARGETS[targetKey] || !color) {
-      return false;
-    }
-
-    currentColors[targetKey] = color;
-    document.documentElement.style.setProperty(COLOR_TARGETS[targetKey].cssVariable, color);
-    if (targetKey === activeColorTarget) {
-      updateColorControls(targetKey);
-    }
-    if (persist) {
-      saveTargetColor(targetKey, color);
-    }
-    return true;
-  }
-
-  function renderSwatches(container, colors, labelPrefix) {
-    container.replaceChildren();
-    colors.forEach((color) => {
-      const button = document.createElement('button');
-      button.type = 'button';
-      button.className = 'color-swatch';
-      button.dataset.color = color;
-      button.style.setProperty('--swatch-color', color);
-      button.setAttribute('aria-label', `${labelPrefix} ${color}`);
-      button.setAttribute('aria-pressed', String(color === currentColors[activeColorTarget]));
-      button.addEventListener('click', () => applyColor(activeColorTarget, color));
-      container.append(button);
-    });
-  }
-
-  function renderSavedColors() {
-    renderSwatches(savedColorsContainer, savedColors, 'Apply saved color');
-    savedColorsEmpty.hidden = savedColors.length > 0;
-  }
+function applyColor(targetKey, value, { persist = true } = {}) {
+  const color = normalizeHexColor(value);
+  if (!COLOR_TARGETS[targetKey] || !color) return false;
+  currentColors[targetKey] = color;
+  document.documentElement.style.setProperty(COLOR_TARGETS[targetKey].cssVariable, color);
+  if (persist) localStorage.setItem(COLOR_TARGETS[targetKey].storageKey, color);
+  if (targetKey === activeColorTarget) updateColorControls(targetKey);
+  return true;
+}
 ```
 
-- [ ] **Step 6: Initialize migrated colors and render palettes**
+`updateColorControls()` must synchronize native input, HEX input, preview, output text, sheet title, `--active-picker-color`, validation state, and every swatch’s `aria-pressed` value.
 
-Replace the `currentHues` initialization loop with:
+`renderSwatches(container, colors, labelPrefix)` must create real buttons with `dataset.color`, `--swatch-color`, accessible labels containing the HEX value, click-to-apply behavior, and selected state.
 
-```js
-  Object.keys(COLOR_TARGETS).forEach((targetKey) => {
-    currentColors[targetKey] = readStoredColor(targetKey);
-    applyColor(targetKey, currentColors[targetKey], { persist: false });
-  });
+- [ ] **Step 5: Wire events**
 
-  savedColors = readSavedColors();
-  renderSwatches(quickColorsContainer, QUICK_COLORS, 'Apply quick color');
-  renderSavedColors();
-```
+- Native picker `input`: apply immediately.
+- HEX `input`: apply only when normalization succeeds; otherwise show `Enter a 3- or 6-digit HEX color.` and preserve the previous color.
+- HEX `blur`: restore the last valid normalized value.
+- Save color: `savedColors = addSavedColor(savedColors, currentColors[activeColorTarget])`, persist JSON, rerender.
+- Reset: apply only `COLOR_TARGETS[activeColorTarget].defaultColor`.
+- Open sheet: focus `colorPicker`.
+- Close sheet: keep existing focus return to the trigger.
 
-Keep fare-strip creation immediately after this initialization.
-
-- [ ] **Step 7: Replace hue event listeners with full-picker events**
-
-Replace the hue slider and reset listeners with:
-
-```js
-  colorPicker.addEventListener('input', () => {
-    applyColor(activeColorTarget, colorPicker.value);
-  });
-
-  hexColorInput.addEventListener('input', () => {
-    const color = normalizeHexColor(hexColorInput.value);
-    if (!color) {
-      setValidationMessage('Enter a 3- or 6-digit HEX color.');
-      return;
-    }
-    setValidationMessage();
-    applyColor(activeColorTarget, color);
-  });
-
-  hexColorInput.addEventListener('blur', () => {
-    hexColorInput.value = currentColors[activeColorTarget];
-    setValidationMessage();
-  });
-
-  saveColorButton.addEventListener('click', () => {
-    savedColors = addSavedColor(savedColors, currentColors[activeColorTarget]);
-    persistSavedColors();
-    renderSavedColors();
-    updateSelectedSwatches();
-  });
-
-  resetColor.addEventListener('click', () => {
-    applyColor(activeColorTarget, COLOR_TARGETS[activeColorTarget].defaultColor);
-  });
-```
-
-In `openColorSheet()`, focus `colorPicker` instead of `hueSlider`.
-
-- [ ] **Step 8: Run behavior and regression tests**
+- [ ] **Step 6: Verify and commit**
 
 ```bash
 node --check script.js
 node tests/verify-color-picker.mjs
 node tests/verify-interactions.mjs
-```
-
-Expected: syntax and full-picker tests pass. Interaction tests may still fail only on old target metadata/cache assertions updated in Task 4.
-
-- [ ] **Step 9: Commit Task 3**
-
-```bash
 git add script.js tests/verify-color-picker.mjs
 git commit -m "feat: persist full colors and saved palettes"
 ```
 
 ---
 
-### Task 4: Regression Assertions, Cache Refresh, and Deployment Verification
+### Task 4: Regression Suite, Cache v5, PR, and Pages Deployment
 
 **Files:**
+- Modify: `service-worker.js:1`
 - Modify: `tests/verify-ticket.mjs:61-104`
 - Modify: `tests/verify-interactions.mjs:9-60`
-- Modify: `service-worker.js:1`
-- Test: `tests/verify-ticket.mjs`, `tests/verify-interactions.mjs`, `tests/verify-color-picker.mjs`
 
 **Interfaces:**
-- Consumes: Completed full-picker implementation.
-- Produces: Updated PWA cache, clean regression suite, and a push that triggers the existing Pages workflow.
+- Produces a clean test suite and deployable `main` commit.
 
-- [ ] **Step 1: Update the PWA cache version**
-
-Change the first line of `service-worker.js` to:
+- [ ] **Step 1: Bump the cache**
 
 ```js
 const CACHE_NAME = 'ticket-pwa-v5';
 ```
 
-- [ ] **Step 2: Replace hue-specific assertions in `tests/verify-ticket.mjs`**
+- [ ] **Step 2: Update regressions**
 
-Replace the old `ticket-pwa-v4`, `hueSlider`, `hueValue`, hue storage, and HSL assertions with:
+In `verify-ticket.mjs`, replace hue assertions with assertions for `colorPicker`, `hexColorInput`, `quickColors`, `savedColors`, `saveColor`, `colorValidation`, `colorValue`, all four new HEX storage keys, the legacy QR hue key, focus restoration, and `ticket-pwa-v5`.
 
-```js
-assert.match(serviceWorker, /ticket-pwa-v5/, 'PWA cache must be bumped for the full color picker');
-assert.match(html, /id="colorPicker"[^>]+type="color"/, 'native full color input is required');
-assert.match(html, /id="hexColorInput"/, 'HEX input is required');
-assert.match(html, /id="quickColors"/, 'quick-color container is required');
-assert.match(html, /id="savedColors"/, 'saved-color container is required');
-assert.match(html, /id="saveColor"/, 'save-color button is required');
-assert.match(html, /id="colorValidation"[^>]+aria-live="polite"/, 'inline validation announcement is required');
-assert.match(html, /id="colorValue"[^>]+aria-live="polite"/, 'selected color announcement is required');
-assert.match(js, /const\s+SAVED_COLORS_STORAGE_KEY\s*=\s*'ticketSavedColors'/, 'saved palette storage key is required');
-assert.match(js, /ticketQrColor/, 'QR HEX storage key is required');
-assert.match(js, /ticketFareLeftColor/, 'left strip HEX storage key is required');
-assert.match(js, /ticketFareMiddleColor/, 'middle strip HEX storage key is required');
-assert.match(js, /ticketFareRightColor/, 'right strip HEX storage key is required');
-assert.match(js, /ticketQrHue/, 'legacy QR hue migration key is required');
-assert.match(js, /event\.key\s*===\s*'Escape'/, 'Escape must close the sheet');
-assert.match(js, /activeColorTrigger\.focus\(\)/, 'focus must return to the opening control');
-```
-
-Keep the manifest, offline shell, QR safety, timer direction, responsive layout, and fare-strip assertions unchanged.
-
-- [ ] **Step 3: Update `tests/verify-interactions.mjs` metadata and cache assertions**
-
-Change the target persistence assertion to:
+In `verify-interactions.mjs`, expect strip storage keys:
 
 ```js
-assert.deepEqual(
-  stripTargets.map((key) => COLOR_TARGETS[key].storageKey),
-  ['ticketFareLeftColor', 'ticketFareMiddleColor', 'ticketFareRightColor'],
-  'each fare-strip section must persist its own HEX color',
-);
+['ticketFareLeftColor', 'ticketFareMiddleColor', 'ticketFareRightColor']
 ```
 
-Add:
+and strip defaults:
 
 ```js
-assert.deepEqual(
-  stripTargets.map((key) => COLOR_TARGETS[key].defaultColor),
-  ['#C96BE8', '#D081EE', '#956F62'],
-  'fare-strip visual defaults must remain unchanged',
-);
+['#C96BE8', '#D081EE', '#956F62']
 ```
 
-Change the service-worker assertion to:
+Keep zone increment, three strip buttons, and left-to-right progress assertions unchanged. Expect `ticket-pwa-v5`.
 
-```js
-assert.match(serviceWorker, /ticket-pwa-v5/, 'the service-worker cache must be bumped for the full color picker');
-```
-
-Keep zone increment, fare-strip click targets, and left-to-right progress assertions unchanged.
-
-- [ ] **Step 4: Run the complete verification suite**
+- [ ] **Step 3: Run complete verification**
 
 ```bash
 node --check script.js
@@ -931,58 +409,17 @@ node tests/verify-interactions.mjs
 node tests/verify-ticket.mjs
 ```
 
-Expected: all commands exit with status 0 and print their success messages.
+Expected: all four commands exit 0.
 
-- [ ] **Step 5: Review the final diff against the approved specification**
-
-Run:
-
-```bash
-git diff main...HEAD -- index.html styles.css script.js service-worker.js tests/verify-color-picker.mjs tests/verify-interactions.mjs tests/verify-ticket.mjs
-```
-
-Confirm:
-
-- Grey, black, white, muted, and bright colors are accepted.
-- Native picker, HEX input, quick swatches, saved swatches, preview, Save color, Reset, and close controls are present.
-- All four targets persist independently.
-- Saved colors are shared, newest-first, deduplicated, and capped at 20.
-- Invalid HEX does not change the active target.
-- Legacy hue values migrate.
-- Existing zone, timer, QR safety, and fare-strip interactions remain intact.
-
-- [ ] **Step 6: Commit Task 4**
+- [ ] **Step 4: Commit, review, and deploy**
 
 ```bash
 git add service-worker.js tests/verify-ticket.mjs tests/verify-interactions.mjs
 git commit -m "test: verify full color picker deployment"
-```
-
-- [ ] **Step 7: Push, open a pull request, and deploy**
-
-```bash
 git push -u origin fix/full-color-picker
 ```
 
-Open a pull request from `fix/full-color-picker` into `main` with:
-
-```markdown
-## What changed
-- replaced the hue-only slider with a native full-color picker and exact HEX input
-- added quick colors including grey, black, and white
-- added a reusable, persisted saved-color palette
-- kept independent colors for the QR frame and all three fare-strip segments
-- migrated existing hue preferences where possible
-- bumped the PWA cache to v5
-
-## Verification
-- `node --check script.js`
-- `node tests/verify-color-picker.mjs`
-- `node tests/verify-interactions.mjs`
-- `node tests/verify-ticket.mjs`
-```
-
-After review, squash-merge the pull request. Confirm the GitHub Pages workflow triggered on the resulting `main` commit and verify the public URL loads the updated picker:
+Open a PR into `main`, include all four verification commands, review the final diff against the approved design, squash-merge, and confirm the existing Pages workflow deploys:
 
 ```text
 https://puranjayyadav.github.io/ticket/
