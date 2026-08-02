@@ -2,45 +2,31 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#238fd8" />
   <title>One Way Ticket</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <main class="app-shell">
-    <header class="top-bar">
-      <button class="back-button" type="button" aria-label="Go back">‹</button>
+  <main class="screen">
+    <header class="app-header">
       <h1>One Way Ticket</h1>
-      <div></div>
     </header>
 
-    <section class="ticket-card" aria-label="Transit ticket">
-      <button class="qr-button" id="qrButton" type="button" aria-label="Change QR frame color">
-        <span class="qr-frame" id="qrFrame">
+    <section class="ticket" aria-label="One way transit ticket">
+      <button class="qr-button" id="qrButton" type="button" aria-label="Ticket QR code">
+        <span class="qr-frame">
           <span class="fake-qr" role="img" aria-label="QR-style ticket code"></span>
         </span>
       </button>
 
-      <div class="enlarge-label">Tap QR to change color</div>
-
-      <section class="color-panel" id="colorPanel" hidden>
-        <label for="hueSlider">QR frame color</label>
-        <input id="hueSlider" type="range" min="0" max="360" value="48" />
-        <div class="color-row">
-          <span class="color-preview" id="colorPreview" aria-hidden="true"></span>
-          <output id="colorValue" for="hueSlider">hsl(48 100% 50%)</output>
-          <button id="resetColor" type="button">Reset</button>
-        </div>
-      </section>
-
-      <div class="divider"></div>
+      <div class="divider" aria-hidden="true"></div>
 
       <section class="ticket-details">
-        <h2>INTRASTATE</h2>
-        <div class="zone-number">1</div>
+        <h2>INTERSTATE</h2>
+        <div class="zone-number">2</div>
         <div class="zone-label">ZONE RIDE</div>
-        <div class="passenger-count">2 Adult</div>
+        <div class="passenger-count">1 Adult</div>
       </section>
 
       <section class="expiry-section">
@@ -48,9 +34,22 @@
           <div class="progress-fill" id="progressFill"></div>
           <div class="progress-dot" id="progressDot"></div>
         </div>
-        <p class="expiry-text">Expires in <strong id="countdown">29:42</strong></p>
+        <p class="expiry-text">Expires in <strong id="countdown">59:58</strong></p>
         <a href="#" class="instructions-link" id="instructionsLink">View Onboard Validator Instructions</a>
       </section>
+    </section>
+
+    <section class="hidden-color-panel" id="colorPanel" hidden aria-label="QR frame color controls">
+      <div class="panel-header">
+        <strong>QR frame color</strong>
+        <button id="closePanel" type="button" aria-label="Close color controls">×</button>
+      </div>
+      <input id="hueSlider" type="range" min="0" max="360" value="48" aria-label="QR frame hue" />
+      <div class="panel-footer">
+        <span class="color-preview" id="colorPreview" aria-hidden="true"></span>
+        <output id="colorValue" for="hueSlider">hsl(48 100% 50%)</output>
+        <button id="resetColor" type="button">Reset</button>
+      </div>
     </section>
   </main>
 
