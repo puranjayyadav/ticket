@@ -13,7 +13,7 @@ assert.match(js, /dialog\.id\s*=\s*'qrDialog'/);
 assert.match(js, /ticketQrColor/);
 assert.match(js, /ticketSavedColors/);
 assert.match(js, /navigator\.serviceWorker\.register\('\.\/service-worker\.js'\)/);
-assert.match(serviceWorker, /ticket-pwa-v5/);
+assert.match(serviceWorker, /ticket-pwa-v6/);
 assert.match(serviceWorker, /caches\.match\([^)]*ignoreSearch:\s*true/s);
 for (const asset of ['./', './index.html', './styles.css', './script.js', './manifest.webmanifest']) {
   assert.ok(serviceWorker.includes(`'${asset}'`));
