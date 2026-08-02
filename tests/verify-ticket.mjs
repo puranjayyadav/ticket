@@ -5,6 +5,7 @@ const js = readFileSync(new URL('../script.js', import.meta.url), 'utf8');
 const css = `${readFileSync(new URL('../base-styles.css', import.meta.url), 'utf8')}
 ${readFileSync(new URL('../styles.css', import.meta.url), 'utf8')}`;
 const serviceWorker = readFileSync(new URL('../service-worker.js', import.meta.url), 'utf8');
+const pagesWorkflow = readFileSync(new URL('../.github/workflows/deploy-pages.yml', import.meta.url), 'utf8');
 
 assert.doesNotMatch(js, /new\s+QRCode|qr-code-generator|toDataURL\s*\(/i);
 assert.match(js, /class="demo-badge">DEMO/);
@@ -16,6 +17,7 @@ assert.match(js, /ticketSavedColors/);
 assert.match(js, /navigator\.serviceWorker\.register\('\.\/service-worker\.js'\)/);
 assert.match(serviceWorker, /ticket-pwa-v7/);
 assert.match(serviceWorker, /caches\.match\([^)]*ignoreSearch:\s*true/s);
+assert.match(pagesWorkflow, /cp index\.html styles\.css base-styles\.css script\.js manifest\.webmanifest service-worker\.js _site\//);
 for (const asset of ['./', './index.html', './styles.css', './base-styles.css', './script.js', './manifest.webmanifest']) {
   assert.ok(serviceWorker.includes(`'${asset}'`));
 }
