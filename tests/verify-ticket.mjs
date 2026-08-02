@@ -61,7 +61,7 @@ assert.match(serviceWorker, /self\.addEventListener\('install'/, 'service worker
 assert.match(serviceWorker, /self\.addEventListener\('activate'/, 'service worker activate handler is required');
 assert.match(serviceWorker, /self\.addEventListener\('fetch'/, 'service worker fetch handler is required');
 assert.match(serviceWorker, /caches\.match\([^)]*ignoreSearch:\s*true/s, 'offline requests must ignore cache-busting query strings');
-assert.match(serviceWorker, /ticket-pwa-v3/, 'PWA cache must be bumped for the progress update');
+assert.match(serviceWorker, /ticket-pwa-v4/, 'PWA cache must be bumped for the interaction update');
 assert.match(js, /navigator\.serviceWorker\.register\('\.\/service-worker\.js'\)/, 'service worker registration is required');
 
 assert.match(html, /id="qrColorButton"/, 'QR color button is required');
@@ -82,13 +82,13 @@ assert.match(js, /hsl\(\$\{hue\}\s+100%\s+50%\)/, 'hue must use the approved HSL
 assert.match(js, /event\.key\s*===\s*'Escape'/, 'Escape must close the sheet');
 assert.match(js, /qrColorButton\.focus\(\)/, 'focus must return to the QR button');
 
-assert.match(js, /const\s+elapsedSeconds\s*=\s*STARTING_SECONDS\s*-\s*remainingSeconds/, 'progress must be based on elapsed time');
-assert.match(js, /elapsedSeconds\s*\/\s*STARTING_SECONDS/, 'progress must fill as elapsed time increases');
+assert.match(js, /const\s+elapsedSeconds\s*=\s*startingSeconds\s*-\s*safeRemaining/, 'progress must be based on elapsed time');
+assert.match(js, /elapsedSeconds\s*\/\s*startingSeconds/, 'progress must fill as elapsed time increases');
 assert.doesNotMatch(js, /remainingSeconds\s*\/\s*STARTING_SECONDS/, 'remaining-time ratio would drain the bar');
 
 assert.match(css, /\.app-header\s*\{[^}]*height:\s*100px/s, 'header height must use the compact layout');
 assert.match(css, /\.ticket\s*\{[^}]*padding:\s*25px\s+35px\s+16px/s, 'ticket top padding must be compact');
-assert.match(css, /\.expiry-section::before\s*\{/s, 'segmented fare strip is required');
+assert.match(css, /\.expiry-section::before\s*\{/s, 'segmented fare strip fallback is required');
 assert.match(css, /--fare-strip-purple:\s*#c96be8/, 'first fare-strip color is required');
 assert.match(css, /--fare-strip-lilac:\s*#d081ee/, 'second fare-strip color is required');
 assert.match(css, /--fare-strip-brown:\s*#956f62/, 'third fare-strip color is required');
@@ -99,4 +99,4 @@ assert.match(css, /@media\s*\(max-width:\s*430px\)/, '430px responsive rule is r
 assert.match(css, /@media\s*\(max-width:\s*390px\)/, '390px responsive rule is required');
 assert.match(css, /@media\s*\(max-width:\s*340px\)/, '320px-class responsive rule is required');
 
-console.log('Ticket PWA, offline cache, QR safety, progress direction, and layout checks passed.');
+console.log('Ticket PWA, offline cache, QR safety, progress direction, interactions, and layout checks passed.');
