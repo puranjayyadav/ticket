@@ -1,6 +1,6 @@
 :root {
   --blue: #238fd8;
-  --qr-color: hsl(48 100% 50%);
+  --qr-color: #ffd400;
   --page-gray: #ececf0;
   --text: #070707;
   --divider: #bebfc4;
@@ -26,7 +26,7 @@ input { -webkit-tap-highlight-color: transparent; }
 .screen {
   width: 100%;
   min-height: 100dvh;
-  padding-bottom: max(20px, env(safe-area-inset-bottom));
+  padding-bottom: max(12px, env(safe-area-inset-bottom));
   background:
     linear-gradient(
       to bottom,
@@ -38,7 +38,7 @@ input { -webkit-tap-highlight-color: transparent; }
 }
 
 .app-header {
-  height: clamp(132px, 16.5dvh, 175px);
+  height: 126px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -48,59 +48,58 @@ input { -webkit-tap-highlight-color: transparent; }
 
 .app-header h1 {
   margin: 0;
-  font-size: clamp(27px, 6.8vw, 34px);
+  font-size: clamp(25px, 6.2vw, 31px);
   font-weight: 700;
   letter-spacing: -0.4px;
 }
 
 .ticket {
-  width: calc(100% - 82px);
-  min-height: calc(100dvh - 192px);
+  width: calc(100% - 48px);
+  min-height: calc(100dvh - 142px);
   margin: 0 auto;
-  padding: clamp(38px, 4.6dvh, 54px) clamp(44px, 7vw, 72px) 28px;
+  padding: 39px 35px 16px;
   background: #fff;
-  border-radius: 31px;
+  border-radius: 29px;
   box-shadow: 0 10px 26px rgba(0, 0, 0, 0.14);
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
-.qr-button {
-  width: min(68vw, 445px);
-  padding: 0;
-  border: 0;
-  background: transparent;
-  cursor: pointer;
+.qr-block {
+  width: min(55vw, 356px);
+  flex: 0 0 auto;
 }
 
 .qr-frame {
-  display: block;
   width: 100%;
-  padding: clamp(18px, 3.2vw, 28px);
-  border-radius: 18px;
+  padding: 15px;
+  border-radius: 17px;
   background: var(--qr-color);
-  transition: background-color 120ms linear, transform 120ms ease;
 }
 
-.qr-button:active .qr-frame { transform: scale(0.992); }
-
-.fake-qr {
+.qr-art {
   display: block;
   width: 100%;
+  height: auto;
   aspect-ratio: 1;
-  background-color: #fff;
-  background-image:
-    linear-gradient(90deg, #000 11%, transparent 11% 22%, #000 22% 33%, transparent 33% 44%, #000 44% 55%, transparent 55% 66%, #000 66% 77%, transparent 77% 88%, #000 88%),
-    linear-gradient(#000 11%, transparent 11% 22%, #000 22% 33%, transparent 33% 44%, #000 44% 55%, transparent 55% 66%, #000 66% 77%, transparent 77% 88%, #000 88%);
-  background-size: 25px 25px;
-  box-shadow: inset 0 0 0 13px #fff, inset 0 0 0 18px #000;
+  background: #fff;
+}
+
+.quiet-zone,
+.finder-hole {
+  fill: #fff;
+}
+
+.finder,
+.qr-modules {
+  fill: #000;
 }
 
 .divider {
   width: 100%;
-  margin-top: clamp(43px, 5.5dvh, 62px);
-  border-top: 3px dashed var(--divider);
+  margin-top: 27px;
+  border-top: 2px dashed var(--divider);
 }
 
 .ticket-details {
@@ -108,44 +107,44 @@ input { -webkit-tap-highlight-color: transparent; }
 }
 
 .ticket-details h2 {
-  margin: clamp(59px, 7.2dvh, 76px) 0 24px;
+  margin: 35px 0 16px;
   color: #ff343b;
-  font-size: clamp(38px, 8.3vw, 55px);
+  font-size: clamp(30px, 7.5vw, 42px);
   line-height: 1;
   font-weight: 700;
-  letter-spacing: -1px;
+  letter-spacing: -0.7px;
 }
 
 .zone-number {
-  font-size: clamp(52px, 11vw, 72px);
+  font-size: clamp(43px, 10vw, 61px);
   line-height: 0.95;
   font-weight: 700;
 }
 
 .zone-label {
-  margin-top: 20px;
-  font-size: clamp(28px, 6vw, 40px);
+  margin-top: 14px;
+  font-size: clamp(23px, 5.7vw, 34px);
   line-height: 1;
   font-weight: 700;
 }
 
 .passenger-count {
-  margin-top: 14px;
-  font-size: clamp(21px, 4.2vw, 28px);
+  margin-top: 9px;
+  font-size: clamp(16px, 4vw, 24px);
 }
 
 .expiry-section {
   width: 100%;
   margin-top: auto;
-  padding-top: 60px;
+  padding-top: 36px;
   text-align: center;
 }
 
 .progress-track {
   position: relative;
   width: 100%;
-  height: 10px;
-  margin: 0 auto 24px;
+  height: 7px;
+  margin: 0 auto 15px;
   border-radius: 999px;
   background: #eeeeef;
 }
@@ -159,8 +158,8 @@ input { -webkit-tap-highlight-color: transparent; }
 .progress-dot {
   position: absolute;
   top: 50%;
-  width: 9px;
-  height: 9px;
+  width: 8px;
+  height: 8px;
   transform: translate(-50%, -50%);
   border-radius: 50%;
   background: #1594eb;
@@ -168,7 +167,7 @@ input { -webkit-tap-highlight-color: transparent; }
 
 .expiry-text {
   margin: 0;
-  font-size: clamp(27px, 5.8vw, 38px);
+  font-size: clamp(22px, 5.3vw, 31px);
   line-height: 1.05;
   font-weight: 700;
 }
@@ -177,87 +176,92 @@ input { -webkit-tap-highlight-color: transparent; }
 
 .instructions-link {
   display: inline-block;
-  margin-top: 8px;
+  margin-top: 5px;
   color: #111;
-  font-size: clamp(16px, 3.2vw, 21px);
+  font-size: clamp(14px, 3.3vw, 19px);
   text-underline-offset: 2px;
 }
 
-.hidden-color-panel {
-  position: fixed;
-  left: 16px;
-  right: 16px;
-  bottom: max(16px, env(safe-area-inset-bottom));
-  z-index: 20;
-  padding: 16px;
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.98);
-  box-shadow: 0 12px 40px rgba(0,0,0,.28);
+@media (max-width: 430px) {
+  .ticket {
+    width: calc(100% - 48px);
+    padding-inline: 35px;
+  }
+
+  .qr-block {
+    width: min(55vw, 238px);
+  }
 }
 
-.panel-header,
-.panel-footer {
-  display: flex;
-  align-items: center;
-  gap: 10px;
+@media (max-width: 390px) {
+  .ticket {
+    width: calc(100% - 38px);
+    padding: 34px 30px 15px;
+  }
+
+  .qr-block {
+    width: min(56vw, 220px);
+  }
+
+  .qr-frame {
+    padding: 14px;
+  }
+
+  .divider {
+    margin-top: 25px;
+  }
+
+  .ticket-details h2 {
+    margin-top: 32px;
+  }
 }
 
-.panel-header { justify-content: space-between; }
-
-.panel-header button,
-.panel-footer button {
-  border: 1px solid #d2d2d7;
-  border-radius: 9px;
-  background: #fff;
-  padding: 7px 10px;
-}
-
-.hidden-color-panel input[type="range"] {
-  width: 100%;
-  margin: 15px 0;
-  accent-color: var(--qr-color);
-}
-
-.color-preview {
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background: var(--qr-color);
-  border: 1px solid rgba(0,0,0,.2);
-}
-
-.panel-footer output { flex: 1; }
-
-@media (max-width: 520px) {
+@media (max-width: 340px) {
   .app-header {
-    height: 133px;
+    height: 108px;
   }
 
   .ticket {
-    width: calc(100% - 40px);
-    min-height: calc(100dvh - 159px);
-    padding: 39px 38px 24px;
-    border-radius: 29px;
+    width: calc(100% - 18px);
+    min-height: calc(100dvh - 120px);
+    padding: 25px 24px 14px;
   }
 
-  .qr-button { width: min(68vw, 378px); }
-  .divider { margin-top: 43px; }
-  .ticket-details h2 { margin-top: 56px; }
-  .expiry-section { padding-top: 42px; }
+  .qr-block {
+    width: min(58vw, 196px);
+  }
+
+  .qr-frame {
+    padding: 12px;
+    border-radius: 14px;
+  }
+
+  .divider {
+    width: 100%;
+    margin-top: 23px;
+  }
+
+  .ticket-details h2 {
+    margin-top: 27px;
+  }
+
+  .expiry-section {
+    padding-top: 25px;
+  }
 }
 
-@media (max-height: 780px) {
-  .app-header { height: 108px; }
+@media (max-height: 680px) {
+  .app-header { height: 96px; }
 
   .ticket {
-    min-height: calc(100dvh - 128px);
-    padding-top: 24px;
+    min-height: calc(100dvh - 110px);
+    padding-top: 20px;
   }
 
-  .qr-button { width: min(52vw, 260px); }
-  .divider { margin-top: 24px; }
-  .ticket-details h2 { margin-top: 28px; margin-bottom: 14px; }
-  .zone-label { margin-top: 12px; }
-  .passenger-count { margin-top: 7px; }
-  .expiry-section { padding-top: 22px; }
+  .qr-block { width: min(43vw, 190px); }
+  .divider { margin-top: 18px; }
+  .ticket-details h2 { margin: 22px 0 10px; }
+  .zone-label { margin-top: 9px; }
+  .passenger-count { margin-top: 5px; }
+  .expiry-section { padding-top: 16px; }
 }
