@@ -1,12 +1,12 @@
 {
-  "name": "One Way Ticket",
-  "short_name": "Ticket",
+  "name": "One Way Ticket Demo",
+  "short_name": "Ticket Demo",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "theme_color": "#238fd8",
-  "background_color": "#238fd8",
+  "theme_color": "#1C87D9",
+  "background_color": "#F7F7F7",
   "icons": [
     {
       "src": "icons/icon-192.png",
