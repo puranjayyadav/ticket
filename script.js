@@ -26,7 +26,8 @@ function formatTime(totalSeconds) {
 
 function renderTimer() {
   countdown.textContent = remainingSeconds > 0 ? formatTime(remainingSeconds) : 'Expired';
-  const percent = Math.max(0, (remainingSeconds / STARTING_SECONDS) * 100);
+  const elapsedSeconds = STARTING_SECONDS - remainingSeconds;
+  const percent = Math.min(100, Math.max(0, (elapsedSeconds / STARTING_SECONDS) * 100));
   progressFill.style.width = `${percent}%`;
   progressDot.style.left = `${percent}%`;
 
