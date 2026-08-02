@@ -4,6 +4,9 @@
   --page-gray: #ececf0;
   --text: #070707;
   --divider: #bebfc4;
+  --fare-strip-purple: #c96be8;
+  --fare-strip-lilac: #d081ee;
+  --fare-strip-brown: #956f62;
 }
 
 * { box-sizing: border-box; }
@@ -38,7 +41,7 @@ input { -webkit-tap-highlight-color: transparent; }
 }
 
 .app-header {
-  height: 126px;
+  height: 100px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -55,9 +58,9 @@ input { -webkit-tap-highlight-color: transparent; }
 
 .ticket {
   width: calc(100% - 48px);
-  min-height: calc(100dvh - 142px);
+  min-height: calc(100dvh - 116px);
   margin: 0 auto;
-  padding: 39px 35px 16px;
+  padding: 25px 35px 16px;
   background: #fff;
   border-radius: 29px;
   box-shadow: 0 10px 26px rgba(0, 0, 0, 0.14);
@@ -153,6 +156,20 @@ input { -webkit-tap-highlight-color: transparent; }
   margin-top: auto;
   padding-top: 36px;
   text-align: center;
+}
+
+.expiry-section::before {
+  content: "";
+  display: block;
+  width: 100%;
+  height: 12px;
+  margin: 0 auto 34px;
+  background: linear-gradient(
+    to right,
+    var(--fare-strip-purple) 0 33.333%,
+    var(--fare-strip-lilac) 33.333% 66.666%,
+    var(--fare-strip-brown) 66.666% 100%
+  );
 }
 
 .progress-track {
@@ -375,7 +392,7 @@ body.sheet-open {
 @media (max-width: 390px) {
   .ticket {
     width: calc(100% - 38px);
-    padding: 34px 30px 15px;
+    padding: 25px 30px 15px;
   }
 
   .qr-block {
@@ -394,6 +411,11 @@ body.sheet-open {
     margin-top: 32px;
   }
 
+  .expiry-section::before {
+    height: 11px;
+    margin-bottom: 28px;
+  }
+
   .color-sheet {
     padding-inline: 16px;
   }
@@ -401,13 +423,13 @@ body.sheet-open {
 
 @media (max-width: 340px) {
   .app-header {
-    height: 108px;
+    height: 88px;
   }
 
   .ticket {
     width: calc(100% - 18px);
-    min-height: calc(100dvh - 120px);
-    padding: 25px 24px 14px;
+    min-height: calc(100dvh - 100px);
+    padding: 20px 24px 14px;
   }
 
   .qr-block {
@@ -431,14 +453,19 @@ body.sheet-open {
   .expiry-section {
     padding-top: 25px;
   }
+
+  .expiry-section::before {
+    height: 9px;
+    margin-bottom: 22px;
+  }
 }
 
 @media (max-height: 680px) {
-  .app-header { height: 96px; }
+  .app-header { height: 82px; }
 
   .ticket {
-    min-height: calc(100dvh - 110px);
-    padding-top: 20px;
+    min-height: calc(100dvh - 96px);
+    padding-top: 18px;
   }
 
   .qr-block { width: min(43vw, 190px); }
@@ -447,8 +474,10 @@ body.sheet-open {
   .zone-label { margin-top: 9px; }
   .passenger-count { margin-top: 5px; }
   .expiry-section { padding-top: 16px; }
+  .expiry-section::before { height: 8px; margin-bottom: 14px; }
 }
 
 @media (max-height: 760px) and (min-height: 681px) {
   .expiry-section { padding-top: 25px; }
+  .expiry-section::before { margin-bottom: 24px; }
 }
