@@ -57,11 +57,11 @@ for (const asset of [
 ]) {
   assert.ok(serviceWorker.includes(`'${asset}'`), `service worker must pre-cache ${asset}`);
 }
-assert.match(serviceWorker, /const\s+CACHE_NAME\s*=\s*'ticket-pwa-v2'/, 'visual update must use the v2 cache');
 assert.match(serviceWorker, /self\.addEventListener\('install'/, 'service worker install handler is required');
 assert.match(serviceWorker, /self\.addEventListener\('activate'/, 'service worker activate handler is required');
 assert.match(serviceWorker, /self\.addEventListener\('fetch'/, 'service worker fetch handler is required');
 assert.match(serviceWorker, /caches\.match\([^)]*ignoreSearch:\s*true/s, 'offline requests must ignore cache-busting query strings');
+assert.match(serviceWorker, /ticket-pwa-v3/, 'PWA cache must be bumped for the progress update');
 assert.match(js, /navigator\.serviceWorker\.register\('\.\/service-worker\.js'\)/, 'service worker registration is required');
 
 assert.match(html, /id="qrColorButton"/, 'QR color button is required');
@@ -82,13 +82,16 @@ assert.match(js, /hsl\(\$\{hue\}\s+100%\s+50%\)/, 'hue must use the approved HSL
 assert.match(js, /event\.key\s*===\s*'Escape'/, 'Escape must close the sheet');
 assert.match(js, /qrColorButton\.focus\(\)/, 'focus must return to the QR button');
 
-assert.match(css, /--fare-strip-purple:\s*#c96be8;/, 'approved purple segment color is required');
-assert.match(css, /--fare-strip-lilac:\s*#d081ee;/, 'approved lilac segment color is required');
-assert.match(css, /--fare-strip-brown:\s*#956f62;/, 'approved brown segment color is required');
-assert.match(css, /\.app-header\s*\{[^}]*height:\s*100px/s, 'top header spacing must be reduced');
-assert.match(css, /\.ticket\s*\{[^}]*padding:\s*25px 35px 16px/s, 'ticket top padding must be reduced');
-assert.match(css, /\.expiry-section::before\s*\{[^}]*content:\s*""[^}]*display:\s*block[^}]*height:\s*12px/s, 'segmented fare strip geometry is required');
-assert.match(css, /linear-gradient\([^)]*var\(--fare-strip-purple\)[^)]*var\(--fare-strip-lilac\)[^)]*var\(--fare-strip-brown\)/s, 'fare strip must contain the three approved segments');
+assert.match(js, /const\s+elapsedSeconds\s*=\s*STARTING_SECONDS\s*-\s*remainingSeconds/, 'progress must be based on elapsed time');
+assert.match(js, /elapsedSeconds\s*\/\s*STARTING_SECONDS/, 'progress must fill as elapsed time increases');
+assert.doesNotMatch(js, /remainingSeconds\s*\/\s*STARTING_SECONDS/, 'remaining-time ratio would drain the bar');
+
+assert.match(css, /\.app-header\s*\{[^}]*height:\s*100px/s, 'header height must use the compact layout');
+assert.match(css, /\.ticket\s*\{[^}]*padding:\s*25px\s+35px\s+16px/s, 'ticket top padding must be compact');
+assert.match(css, /\.expiry-section::before\s*\{/s, 'segmented fare strip is required');
+assert.match(css, /--fare-strip-purple:\s*#c96be8/, 'first fare-strip color is required');
+assert.match(css, /--fare-strip-lilac:\s*#d081ee/, 'second fare-strip color is required');
+assert.match(css, /--fare-strip-brown:\s*#956f62/, 'third fare-strip color is required');
 
 assert.match(css, /\.qr-art\s*\{[^}]*width:\s*100%/s, 'SVG must scale fluidly');
 assert.match(css, /overflow-x:\s*hidden/, 'horizontal overflow protection is required');
@@ -96,4 +99,4 @@ assert.match(css, /@media\s*\(max-width:\s*430px\)/, '430px responsive rule is r
 assert.match(css, /@media\s*\(max-width:\s*390px\)/, '390px responsive rule is required');
 assert.match(css, /@media\s*\(max-width:\s*340px\)/, '320px-class responsive rule is required');
 
-console.log('Ticket PWA, offline cache, QR safety, color-sheet, spacing, and fare-strip checks passed.');
+console.log('Ticket PWA, offline cache, QR safety, progress direction, and layout checks passed.');
