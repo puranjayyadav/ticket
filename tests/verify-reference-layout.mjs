@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
-const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+const css = `${readFileSync(new URL('../base-styles.css', import.meta.url), 'utf8')}
+${readFileSync(new URL('../styles.css', import.meta.url), 'utf8')}`;
 const js = readFileSync(new URL('../script.js', import.meta.url), 'utf8');
 
 for (const requiredText of [
