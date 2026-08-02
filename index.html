@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#238fd8" />
+  <title>One Way Ticket</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="app-shell">
+    <header class="top-bar">
+      <button class="back-button" type="button" aria-label="Go back">‹</button>
+      <h1>One Way Ticket</h1>
+      <div></div>
+    </header>
+
+    <section class="ticket-card" aria-label="Transit ticket">
+      <button class="qr-button" id="qrButton" type="button" aria-label="Change QR frame color">
+        <span class="qr-frame" id="qrFrame">
+          <img src="assets/ticket-qr-inner.png" alt="Ticket QR code" />
+        </span>
+      </button>
+
+      <div class="enlarge-label">Tap QR to change color</div>
+
+      <section class="color-panel" id="colorPanel" hidden>
+        <label for="hueSlider">QR frame color</label>
+        <input id="hueSlider" type="range" min="0" max="360" value="48" />
+        <div class="color-row">
+          <span class="color-preview" id="colorPreview" aria-hidden="true"></span>
+          <output id="colorValue" for="hueSlider">hsl(48 100% 50%)</output>
+          <button id="resetColor" type="button">Reset</button>
+        </div>
+      </section>
+
+      <div class="divider"></div>
+
+      <section class="ticket-details">
+        <h2>INTRASTATE</h2>
+        <div class="zone-number">1</div>
+        <div class="zone-label">ZONE RIDE</div>
+        <div class="passenger-count">2 Adult</div>
+      </section>
+
+      <section class="expiry-section">
+        <div class="progress-track" aria-hidden="true">
+          <div class="progress-fill" id="progressFill"></div>
+          <div class="progress-dot" id="progressDot"></div>
+        </div>
+        <p class="expiry-text">Expires in <strong id="countdown">29:42</strong></p>
+        <a href="#" class="instructions-link" id="instructionsLink">View Onboard Validator Instructions</a>
+      </section>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
