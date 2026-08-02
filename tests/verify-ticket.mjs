@@ -57,6 +57,7 @@ for (const asset of [
 ]) {
   assert.ok(serviceWorker.includes(`'${asset}'`), `service worker must pre-cache ${asset}`);
 }
+assert.match(serviceWorker, /const\s+CACHE_NAME\s*=\s*'ticket-pwa-v2'/, 'visual update must use the v2 cache');
 assert.match(serviceWorker, /self\.addEventListener\('install'/, 'service worker install handler is required');
 assert.match(serviceWorker, /self\.addEventListener\('activate'/, 'service worker activate handler is required');
 assert.match(serviceWorker, /self\.addEventListener\('fetch'/, 'service worker fetch handler is required');
@@ -81,10 +82,21 @@ assert.match(js, /hsl\(\$\{hue\}\s+100%\s+50%\)/, 'hue must use the approved HSL
 assert.match(js, /event\.key\s*===\s*'Escape'/, 'Escape must close the sheet');
 assert.match(js, /qrColorButton\.focus\(\)/, 'focus must return to the QR button');
 
+assert.match(html, /class="fare-color-strip"/, 'segmented fare color strip is required');
+assert.match(html, /fare-color-strip__segment--purple/, 'purple fare segment is required');
+assert.match(html, /fare-color-strip__segment--lilac/, 'lilac fare segment is required');
+assert.match(html, /fare-color-strip__segment--brown/, 'brown fare segment is required');
+assert.match(css, /--fare-strip-purple:\s*#c96be8;/, 'approved purple segment color is required');
+assert.match(css, /--fare-strip-lilac:\s*#d081ee;/, 'approved lilac segment color is required');
+assert.match(css, /--fare-strip-brown:\s*#956f62;/, 'approved brown segment color is required');
+assert.match(css, /\.app-header\s*\{[^}]*height:\s*100px/s, 'top header spacing must be reduced');
+assert.match(css, /\.ticket\s*\{[^}]*padding:\s*25px 35px 16px/s, 'ticket top padding must be reduced');
+assert.match(css, /\.fare-color-strip\s*\{[^}]*display:\s*grid[^}]*height:\s*12px/s, 'fare strip geometry is required');
+
 assert.match(css, /\.qr-art\s*\{[^}]*width:\s*100%/s, 'SVG must scale fluidly');
 assert.match(css, /overflow-x:\s*hidden/, 'horizontal overflow protection is required');
 assert.match(css, /@media\s*\(max-width:\s*430px\)/, '430px responsive rule is required');
 assert.match(css, /@media\s*\(max-width:\s*390px\)/, '390px responsive rule is required');
 assert.match(css, /@media\s*\(max-width:\s*340px\)/, '320px-class responsive rule is required');
 
-console.log('Ticket PWA, offline cache, QR safety, and color-sheet checks passed.');
+console.log('Ticket PWA, offline cache, QR safety, color-sheet, spacing, and fare-strip checks passed.');
