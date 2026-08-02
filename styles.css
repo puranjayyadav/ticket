@@ -265,3 +265,7 @@ input { -webkit-tap-highlight-color: transparent; }
   .passenger-count { margin-top: 5px; }
   .expiry-section { padding-top: 16px; }
 }
+
+@media (max-height: 760px) and (min-height: 681px) {
+  .expiry-section { padding-top: 25px; }
+}
