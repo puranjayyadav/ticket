@@ -30,16 +30,16 @@ assert.equal(hslToHex(0, 0, 50), '#808080');
 assert.equal(hslToHex(0, 100, 50), '#FF0000');
 assert.equal(hslToHex(120, 100, 50), '#00FF00');
 assert.equal(hslToHex(240, 100, 50), '#0000FF');
-assert.equal(legacyHueToHex('qr', 'invalid'), '#808080');
+assert.equal(legacyHueToHex('qr', 'invalid'), '#FFC0CB');
 assert.match(legacyHueToHex('fareLeft', '285'), /^#[0-9A-F]{6}$/);
 
 assert.deepEqual(
   Object.fromEntries(Object.entries(COLOR_TARGETS).map(([key, target]) => [key, target.defaultColor])),
   {
-    qr: '#808080',
-    fareLeft: '#56E7BE',
-    fareMiddle: '#598B7F',
-    fareRight: '#A9933E',
+    qr: '#FFC0CB',
+    fareLeft: '#29BEDE',
+    fareMiddle: '#37A1B1',
+    fareRight: '#2F8101',
   },
 );
 assert.deepEqual(
