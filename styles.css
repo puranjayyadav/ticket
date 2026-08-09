@@ -1,5 +1,13 @@
 @import url("./base-styles.css");
 
+:root {
+  --qr-color: #FFC0CB;
+  --fare-strip-left: #29BEDE;
+  --fare-strip-middle: #37A1B1;
+  --fare-strip-right: #2F8101;
+  --active-picker-color: #FFC0CB;
+}
+
 @keyframes fare-strip-fade {
   0%,
   100% {

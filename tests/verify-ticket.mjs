@@ -12,10 +12,10 @@ assert.match(js, /class="demo-badge">DEMO/);
 assert.match(js, /id="colorPicker"[^>]+type="color"/);
 assert.match(js, /id="hexColorInput"/);
 assert.match(js, /dialog\.id\s*=\s*'qrDialog'/);
-assert.match(js, /ticketQrColor/);
+assert.match(js, /ticketQrColorV2/);
 assert.match(js, /ticketSavedColors/);
 assert.match(js, /navigator\.serviceWorker\.register\('\.\/service-worker\.js'\)/);
-assert.match(serviceWorker, /ticket-pwa-v7/);
+assert.match(serviceWorker, /ticket-pwa-v8/);
 assert.match(serviceWorker, /caches\.match\([^)]*ignoreSearch:\s*true/s);
 assert.match(pagesWorkflow, /cp index\.html styles\.css base-styles\.css script\.js manifest\.webmanifest service-worker\.js _site\//);
 for (const asset of ['./', './index.html', './styles.css', './base-styles.css', './script.js', './manifest.webmanifest']) {

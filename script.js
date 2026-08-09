@@ -18,38 +18,38 @@ const QUICK_COLORS = Object.freeze([
 const COLOR_TARGETS = Object.freeze({
   qr: Object.freeze({
     cssVariable: '--qr-color',
-    storageKey: 'ticketQrColor',
-    legacyStorageKey: 'ticketQrHue',
+    storageKey: 'ticketQrColorV2',
+    legacyStorageKey: 'ticketQrColor',
     legacySaturation: 100,
     legacyLightness: 50,
-    defaultColor: '#808080',
+    defaultColor: '#FFC0CB',
     title: 'QR frame color',
   }),
   fareLeft: Object.freeze({
     cssVariable: '--fare-strip-left',
-    storageKey: 'ticketFareLeftColor',
-    legacyStorageKey: 'ticketFareLeftHue',
+    storageKey: 'ticketFareLeftColorV2',
+    legacyStorageKey: 'ticketFareLeftColor',
     legacySaturation: 73,
     legacyLightness: 66,
-    defaultColor: '#56E7BE',
+    defaultColor: '#29BEDE',
     title: 'Left bar color',
   }),
   fareMiddle: Object.freeze({
     cssVariable: '--fare-strip-middle',
-    storageKey: 'ticketFareMiddleColor',
-    legacyStorageKey: 'ticketFareMiddleHue',
+    storageKey: 'ticketFareMiddleColorV2',
+    legacyStorageKey: 'ticketFareMiddleColor',
     legacySaturation: 76,
     legacyLightness: 72,
-    defaultColor: '#598B7F',
+    defaultColor: '#37A1B1',
     title: 'Middle bar color',
   }),
   fareRight: Object.freeze({
     cssVariable: '--fare-strip-right',
-    storageKey: 'ticketFareRightColor',
-    legacyStorageKey: 'ticketFareRightHue',
+    storageKey: 'ticketFareRightColorV2',
+    legacyStorageKey: 'ticketFareRightColor',
     legacySaturation: 21,
     legacyLightness: 48,
-    defaultColor: '#A9933E',
+    defaultColor: '#2F8101',
     title: 'Right bar color',
   }),
 });
@@ -279,11 +279,11 @@ function initializeTicket() {
     <div class="picker-fields">
       <label class="picker-field picker-field--native" for="colorPicker">
         <span>Pick any color</span>
-        <input id="colorPicker" type="color" value="#808080" />
+        <input id="colorPicker" type="color" value="#FFC0CB" />
       </label>
       <label class="picker-field" for="hexColorInput">
         <span>HEX color</span>
-        <input id="hexColorInput" type="text" value="#808080" maxlength="7"
+        <input id="hexColorInput" type="text" value="#FFC0CB" maxlength="7"
           autocomplete="off" autocapitalize="characters" spellcheck="false"
           aria-describedby="colorValidation" />
       </label>
@@ -305,7 +305,7 @@ function initializeTicket() {
     </section>
     <div class="picker-actions">
       <span class="color-preview" id="colorPreview" aria-hidden="true"></span>
-      <output id="colorValue" for="colorPicker hexColorInput" aria-live="polite">#808080</output>
+      <output id="colorValue" for="colorPicker hexColorInput" aria-live="polite">#FFC0CB</output>
       <button class="reset-color" id="resetColor" type="button">Reset</button>
     </div>
   `;

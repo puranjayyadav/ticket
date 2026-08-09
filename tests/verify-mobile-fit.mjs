@@ -16,4 +16,4 @@ assert.match(css, /\.instructions-link\s*\{[^}]*margin-top:\s*clamp\(10px,\s*1\.
 assert.match(css, /@media\s*\(max-height:\s*620px\)/);
 assert.match(css, /@media\s*\(max-height:\s*620px\)[\s\S]*\.qr-block\s*\{[^}]*width:\s*min\(37vw,\s*122px\)/s);
 assert.match(css, /@media\s*\(max-height:\s*620px\)[\s\S]*\.instructions-link\s*\{[^}]*margin-top:\s*6px/s);
-assert.match(serviceWorker, /ticket-pwa-v7/);
+assert.match(serviceWorker, /ticket-pwa-v8/);
