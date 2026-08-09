@@ -19,7 +19,7 @@ const COLOR_TARGETS = Object.freeze({
   qr: Object.freeze({
     cssVariable: '--qr-color',
     storageKey: 'ticketQrColorV2',
-    legacyStorageKey: 'ticketQrHue',
+    legacyStorageKey: 'ticketQrColor',
     legacySaturation: 100,
     legacyLightness: 50,
     defaultColor: '#FFC0CB',
@@ -28,7 +28,7 @@ const COLOR_TARGETS = Object.freeze({
   fareLeft: Object.freeze({
     cssVariable: '--fare-strip-left',
     storageKey: 'ticketFareLeftColorV2',
-    legacyStorageKey: 'ticketFareLeftHue',
+    legacyStorageKey: 'ticketFareLeftColor',
     legacySaturation: 73,
     legacyLightness: 66,
     defaultColor: '#29BEDE',
@@ -37,7 +37,7 @@ const COLOR_TARGETS = Object.freeze({
   fareMiddle: Object.freeze({
     cssVariable: '--fare-strip-middle',
     storageKey: 'ticketFareMiddleColorV2',
-    legacyStorageKey: 'ticketFareMiddleHue',
+    legacyStorageKey: 'ticketFareMiddleColor',
     legacySaturation: 76,
     legacyLightness: 72,
     defaultColor: '#37A1B1',
@@ -46,7 +46,7 @@ const COLOR_TARGETS = Object.freeze({
   fareRight: Object.freeze({
     cssVariable: '--fare-strip-right',
     storageKey: 'ticketFareRightColorV2',
-    legacyStorageKey: 'ticketFareRightHue',
+    legacyStorageKey: 'ticketFareRightColor',
     legacySaturation: 21,
     legacyLightness: 48,
     defaultColor: '#2F8101',
