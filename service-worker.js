@@ -1,4 +1,5 @@
-const CACHE_NAME = 'ticket-pwa-v8';
+const CACHE_NAME = 'ticket-pwa-runtime';
+const LEGACY_CACHE_NAMES = new Set(['ticket-pwa-v8']);
 const APP_SHELL = [
   './',
   './index.html',
@@ -23,7 +24,7 @@ self.addEventListener('activate', (event) => {
     caches.keys()
       .then((keys) => Promise.all(
         keys
-          .filter((key) => key !== CACHE_NAME)
+          .filter((key) => key !== CACHE_NAME || LEGACY_CACHE_NAMES.has(key))
           .map((key) => caches.delete(key)),
       ))
       .then(() => self.clients.claim()),
@@ -36,19 +37,19 @@ self.addEventListener('fetch', (event) => {
   }
 
   event.respondWith((async () => {
-    const cached = await caches.match(event.request, { ignoreSearch: true });
-    if (cached) {
-      return cached;
-    }
-
     try {
-      const response = await fetch(event.request);
+      const response = await fetch(event.request, { cache: 'no-store' });
       if (response.ok && new URL(event.request.url).origin === self.location.origin) {
         const cache = await caches.open(CACHE_NAME);
         await cache.put(event.request, response.clone());
       }
       return response;
     } catch (error) {
+      const cached = await caches.match(event.request, { ignoreSearch: true });
+      if (cached) {
+        return cached;
+      }
+
       if (event.request.mode === 'navigate') {
         const fallback = await caches.match('./index.html');
         if (fallback) {
