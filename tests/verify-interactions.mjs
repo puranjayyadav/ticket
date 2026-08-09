@@ -23,6 +23,6 @@ assert.match(script, /createFareStrip\(/);
 assert.match(script, /progressFill\.style\.width\s*=\s*`\$\{percent\}%`/);
 assert.match(script, /progressDot\.style\.left\s*=\s*`\$\{percent\}%`/);
 assert.match(css, /\.progress-fill\s*\{[^}]*left:\s*0|inset:\s*0 auto 0 0/s);
-assert.match(serviceWorker, /ticket-pwa-v7/);
+assert.match(serviceWorker, /ticket-pwa-v8/);
 
 console.log('Zone, progress, and independent fare-strip checks passed.');
