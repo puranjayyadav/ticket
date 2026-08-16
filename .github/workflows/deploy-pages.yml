@@ -29,7 +29,7 @@ jobs:
       - name: Prepare static site
         run: |
           mkdir -p _site/icons
-          cp index.html styles.css base-styles.css script.js manifest.webmanifest service-worker.js _site/
+          cp index.html styles.css base-styles.css palette-bootstrap.js script.js manifest.webmanifest service-worker.js _site/
           cp icons/icon-192.png icons/icon-512.png _site/icons/
           touch _site/.nojekyll
 
