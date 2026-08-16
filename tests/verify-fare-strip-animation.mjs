@@ -5,13 +5,13 @@ const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
 
 assert.match(
   css,
-  /@keyframes\s+fare-strip-fade\s*\{[\s\S]*?0%\s*,\s*100%\s*\{[^}]*opacity:\s*1[^}]*\}[\s\S]*?50%\s*\{[^}]*opacity:\s*0\.35[^}]*\}/,
-  'fare strip keyframes must fade from 1 to 0.35 and back',
+  /@keyframes\s+fare-strip-blink\s*\{[\s\S]*?0%\s*,\s*100%\s*\{[^}]*opacity:\s*1[^}]*\}[\s\S]*?50%\s*\{[^}]*opacity:\s*0\.2[^}]*\}/,
+  'fare strip keyframes must blink from 1 to 0.2 and back',
 );
 assert.match(
   css,
-  /\.fare-strip\s*\{[^}]*animation:\s*fare-strip-fade\s+2\.4s\s+ease-in-out\s+infinite/s,
-  'fare strip must use the approved animation timing',
+  /\.fare-strip\s*\{[^}]*animation:\s*fare-strip-blink\s+1s\s+ease-in-out\s+infinite/s,
+  'fare strip must blink once per second',
 );
 assert.match(
   css,
@@ -26,7 +26,7 @@ assert.match(
 assert.doesNotMatch(
   css,
   /\.fare-strip\s*\{[^}]*pointer-events:\s*none/s,
-  'the animated strip must remain tappable',
+  'the blinking strip must remain tappable',
 );
 
-console.log('Fare-strip fade animation checks passed.');
+console.log('Fare-strip blink animation checks passed.');
