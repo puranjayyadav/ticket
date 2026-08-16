@@ -10,17 +10,22 @@
 
 @keyframes fare-strip-blink {
   0%,
-  100% {
+  49% {
     opacity: 1;
   }
 
-  50% {
-    opacity: 0.2;
+  50%,
+  99% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
   }
 }
 
 .fare-strip {
-  animation: fare-strip-blink 1s ease-in-out infinite;
+  animation: fare-strip-blink 1s steps(1, end) infinite;
 }
 
 body.sheet-open .fare-strip {
